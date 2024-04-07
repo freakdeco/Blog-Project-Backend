@@ -1,0 +1,1 @@
+export const fav_artist = "Lana Del Rey"
