@@ -6,14 +6,12 @@ const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    // check whether the user exists or not
     let user = await User.findOne({ email });
 
     if (user) {
       throw new Error("User have already registered");
     }
 
-    // creating a new user
     user = await User.create({
       name,
       email,
@@ -123,18 +121,20 @@ const updateProfilePicture = async (req, res, next) => {
 
     upload(req, res, async function (err) {
       if (err) {
-        const error = new Error("An unknown error occured when uploading " + err.message);
+        const error = new Error(
+          "An unknown error occured when uploading " + err.message
+        );
         next(error);
       } else {
-        // every thing went well
         if (req.file) {
-          const updatedUser = await User.findByIdAndUpdate(
-            req.user._id,
-            {
-              avatar: req.file.filename,
-            },
-            { new: true }
-          );
+          let filename;
+          let updatedUser = await User.findById(req.user._id);
+          filename = updatedUser.avatar;
+          if (filename) {
+            fileRemover(filename);
+          }
+          updatedUser.avatar = req.file.filename;
+          await updatedUser.save();
           res.json({
             _id: updatedUser._id,
             avatar: updatedUser.avatar,
